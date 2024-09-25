@@ -2,10 +2,12 @@ import { app } from '..';
 import { connectContext } from '../components/connectContext';
 import { getCorsOrigin } from './tools/utils';
 import dotenv from 'dotenv'
+import { PrismaClient } from '@prisma/client'
 
 dotenv.config()
 var debug = require('debug')('kanban-websocket-serve:server');
 var http = require('http');
+const prisma = new PrismaClient()
 
 
 var port = process.env.PORT || '3500'
@@ -27,9 +29,22 @@ var io = require('socket.io')(server, {
  * Listen on provided port, on all network interfaces.
  */
 
-server.listen(port);
-server.on('error', onError);
-server.on('listening', onListening);
+
+async function main() {
+  server.listen(port);
+  server.on('error', onError);
+  server.on('listening', onListening);
+}
+
+main()
+  .then(async () => {
+    await prisma.$disconnect()
+  })
+  .catch(async (e) => {
+    console.error(e)
+    await prisma.$disconnect()
+    process.exit(1)
+  })
 
 /**
  * Event listener for HTTP server "error" event.
@@ -73,3 +88,5 @@ function onListening() {
 }
 
 io.sockets.on('connection', connectContext);
+
+export { prisma }
