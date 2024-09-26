@@ -4,8 +4,10 @@
   "version": "1.0.0",
   "scripts": {
     "lint": "eslint .",
-    "start": "clear && nodemon --exec ts-node src/index.ts",
+    "dev": "clear && nodemon --exec ts-node src/index.ts",
     "build": "node scripts/build.js",
+    "prisma-pull": "npx prisma db pull",
+    "prisma-generate": "npx prisma generate",
     "test": "mocha --require test/support/env --reporter spec --bail --check-leaks test/ test/acceptance/",
     "test-ci": "nyc --exclude examples --exclude test --exclude benchmarks --reporter=lcovonly --reporter=text npm test",
     "test-cov": "nyc --exclude examples --exclude test --exclude benchmarks --reporter=html --reporter=text npm test",

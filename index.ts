@@ -5,10 +5,8 @@ import cookieParser from 'cookie-parser'
 import logger from 'morgan'
 import { router as indexRouter } from './routes/index'
 import { router as usersRouter } from './routes/users'
-import { PrismaClient } from '@prisma/client'
 
 let apps = express();
-const prisma = new PrismaClient()
 
 // view engine setup
 apps.set('views', path.join(__dirname, 'views'));
