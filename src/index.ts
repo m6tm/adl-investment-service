@@ -1,14 +1,16 @@
+import { type Socket } from "socket.io";
 import { app } from '..';
 import { connectContext } from '../components/connectContext';
 import { getCorsOrigin } from './tools/utils';
 import dotenv from 'dotenv'
 import { PrismaClient } from '@prisma/client'
+import { ConnectionSessionManager } from '../components/actions';
 
 dotenv.config()
 var debug = require('debug')('kanban-websocket-serve:server');
 var http = require('http');
 const prisma = new PrismaClient()
-
+const connexionSessionManager = new ConnectionSessionManager()
 
 var port = process.env.PORT || '3500'
 app.set('port', port);
@@ -87,6 +89,9 @@ function onListening() {
   console.log('Listening on ', `http://localhost:${addr.port}`);
 }
 
-io.sockets.on('connection', connectContext);
+io.sockets.on('connection', (socket: Socket) => {
+  connexionSessionManager.socket = socket;
+  connectContext(socket, connexionSessionManager)
+});
 
 export { prisma }

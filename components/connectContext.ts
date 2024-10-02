@@ -1,18 +1,16 @@
-import { Socket } from "socket.io";
-import { joinRoom } from './actions'
+import { type Socket } from "socket.io";
+import { type ConnectionSessionManager, joinRoom } from './actions'
 import groupCall from './GroupCallEvents'
 import discussionEvents from './DiscussionEvents'
-
-let client_socket_id!: string
+import { AppSocketType } from "../src/socket-type";
 
 /**
  * Run when some client is connected
  */
-export const connectContext = (socket: Socket) => {
+export const connectContext = (socket: Socket, sessionManager: ConnectionSessionManager) => {
     //  When someone logs in
-    socket.on('connected', async (data: { user_id: number, discussions: Array<string>, client_socket_id: string }) => {
-        
-        // client_socket_id = data.client_socket_id
+    socket.on('connected', async (data: AppSocketType) => {
+        sessionManager.connectClient(data)
         // data.discussions.forEach(discussion => {
         //     joinRoom(`user_${data.user_id}`, data.user_id, discussion, socket)
 
@@ -23,5 +21,9 @@ export const connectContext = (socket: Socket) => {
         //      */
         //     groupCall(socket, discussion)
         // })
+
     })
+    socket.on('disconnect', (reason) => {
+        sessionManager.disconnectClient(socket.id)
+    });
 }
