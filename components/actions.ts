@@ -32,6 +32,7 @@ export class ConnectionSessionManager {
         
         if (user) {
             this.sessions[data.client_socket_id] = { ...data, user };
+            this.createUserRelations(user);
 
             data.discussions.forEach(room => {
                 const roomExists = this.rooms.get(room);
@@ -47,5 +48,35 @@ export class ConnectionSessionManager {
 
     disconnectClient(client_socket_id: string) {
         delete this.sessions[client_socket_id];
+    }
+
+    createUserRelations = async (user: UserModel) => {
+        const _user = Object.assign({}, user);
+        _user.discussions = (await prisma.discussion_owners.findMany({
+            where: {
+                user_id: user.id
+            }
+        })) as any
+
+        _user.discussions.forEach(async discussion => {
+            discussion.discussion = await prisma.discussions.findFirst({
+                where: {
+                    id: discussion.discussion_id
+                }
+            }) as any
+            discussion.discussion.owners = await prisma.discussion_owners.findMany({
+                where: {
+                    discussion_id: discussion.discussion_id
+                }
+            }) as any
+            discussion.discussion.messages = await prisma.messages.findMany({
+                where: {
+                    discussion_id: discussion.discussion_id
+                }
+            }) as any
+            console.log(discussion.discussion);
+        })
+
+        // console.log(_user);
     }
 }

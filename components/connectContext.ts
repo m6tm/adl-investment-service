@@ -21,7 +21,6 @@ export const connectContext = (socket: Socket, sessionManager: ConnectionSession
         //      */
         //     groupCall(socket, discussion)
         // })
-
     })
     socket.on('disconnect', (reason) => {
         sessionManager.disconnectClient(socket.id)

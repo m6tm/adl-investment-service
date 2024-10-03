@@ -1,8 +1,8 @@
 import { users } from "@prisma/client"
-import DiscussionOwner from "./DiscussionOwner"
+import { DiscussionOwners } from "./DiscussionOwner"
 
 type UserModel = users & {
-    discussions: DiscussionOwner
+    discussions: DiscussionOwners
 }
 
 export default UserModel 
