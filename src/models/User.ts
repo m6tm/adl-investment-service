@@ -5,4 +5,4 @@ type UserModel = users & {
     discussions: DiscussionOwners
 }
 
-export default UserModel 
+export default UserModel

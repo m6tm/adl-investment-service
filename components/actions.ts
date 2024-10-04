@@ -32,7 +32,8 @@ export class ConnectionSessionManager {
         
         if (user) {
             this.sessions[data.client_socket_id] = { ...data, user };
-            this.createUserRelations(user);
+            const user_with_discussions_reletion = await this.createUserRelations(user);
+            user_with_discussions_reletion.password = ""
 
             data.discussions.forEach(room => {
                 const roomExists = this.rooms.get(room);
@@ -43,40 +44,65 @@ export class ConnectionSessionManager {
 
                 joinRoom(Number(user.id), room, this._socket)
             });
+            this._socket.emit('get my discussions', JSON.stringify(user_with_discussions_reletion, (_, value) =>
+                typeof value === 'bigint' ? value.toString() : value
+            ));
         }
     }
 
     disconnectClient(client_socket_id: string) {
+        if (!this.sessions[client_socket_id]) return
+        this._socket.in(client_socket_id).emit('user disconnected', this.sessions[client_socket_id].user_id);
+        this.sessions[client_socket_id].discussions.forEach(room => {
+            const roomExists = this.rooms.get(room);
+            if (roomExists) {
+                roomExists.users = roomExists.users.filter(id => id !== this.sessions[client_socket_id].user.id);
+                this.rooms.set(room, roomExists);
+            }
+        });
         delete this.sessions[client_socket_id];
     }
 
     createUserRelations = async (user: UserModel) => {
-        const _user = Object.assign({}, user);
-        _user.discussions = (await prisma.discussion_owners.findMany({
+        return await prisma.users.findFirst({
             where: {
-                user_id: user.id
+                id: user.id
+            },
+            include:{
+                discussion_owners: {
+                    include: {
+                        discussions: {
+                            include: {
+                                messages: {
+                                    include: {
+                                        message_owners: {
+                                            include: {
+                                                users: {
+                                                    select: {
+                                                        id: true,
+                                                        name: true,
+                                                        email: true,
+                                                        country_id: true,
+                                                        pseudo: true,
+                                                        first_name: true,
+                                                        referal_link: true,
+                                                        birth_date: true,
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                },
+                                discussion_owners: {
+                                    include: {
+                                        users: true,
+                                    }
+                                },
+                            }
+                        }
+                    }
+                },
             }
-        })) as any
-
-        _user.discussions.forEach(async discussion => {
-            discussion.discussion = await prisma.discussions.findFirst({
-                where: {
-                    id: discussion.discussion_id
-                }
-            }) as any
-            discussion.discussion.owners = await prisma.discussion_owners.findMany({
-                where: {
-                    discussion_id: discussion.discussion_id
-                }
-            }) as any
-            discussion.discussion.messages = await prisma.messages.findMany({
-                where: {
-                    discussion_id: discussion.discussion_id
-                }
-            }) as any
-            console.log(discussion.discussion);
-        })
-
-        // console.log(_user);
+        });
     }
 }
