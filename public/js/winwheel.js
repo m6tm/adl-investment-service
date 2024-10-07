@@ -15,21 +15,20 @@ const DECELERATION_RATE = 0.99;
 const MIN_SPEED = 0.0001;
 const ANIMATION_DURATION = 60000;
 
-const sections = [
-  { label: 'Prix 1', color: 'gold' },
-  { label: 'Prix 2', color: 'orange' },
-  { label: 'Prix 3', color: 'darkgoldenrod' },
-  { label: 'Prix 4', color: 'purple' },
-  { label: 'Prix 5', color: 'gold' },
+const prix = [
+  { id: 'p1', label: 'Prix 1', color: 'gold' },
+  { id: 'p2', label: 'Prix 2', color: 'orange' },
+  { id: 'p3', label: 'Prix 3', color: 'darkgoldenrod' },
+  { id: 'p4', label: 'Prix 4', color: 'purple' },
+  { id: 'p5', label: 'Prix 5', color: 'gold' },
 ];
 
 const jackpots = [
-  { label: '$100.000', bgPriceColor: '#e344d1', borderColor: '#fff', textColor: '#e344d1', bgTextColor: '#fff', borderSize: 2 },
-  { label: '$250.000', bgPriceColor: '#5588c5', borderColor: '#fff', textColor: '#5588c5', bgTextColor: '#fff', borderSize: 2 },
-  { label: '$500.000', bgPriceColor: '#7340c9', borderColor: '#fff', textColor: '#7340c9', bgTextColor: '#fff', borderSize: 2 },
-  { label: '$1.000.000', bgPriceColor: '#e75d6b', borderColor: '#fff', textColor: '#e75d6b', bgTextColor: '#fff', borderSize: 2 },
+  { id: 'j1', label: '$100.000', bgPriceColor: '#e344d1', borderColor: '#fff', textColor: '#e344d1', bgTextColor: '#fff', borderSize: 2 },
+  { id: 'j2', label: '$250.000', bgPriceColor: '#5588c5', borderColor: '#fff', textColor: '#5588c5', bgTextColor: '#fff', borderSize: 2 },
+  { id: 'j3', label: '$500.000', bgPriceColor: '#7340c9', borderColor: '#fff', textColor: '#7340c9', bgTextColor: '#fff', borderSize: 2 },
+  { id: 'j4', label: '$1.000.000', bgPriceColor: '#e75d6b', borderColor: '#fff', textColor: '#e75d6b', bgTextColor: '#fff', borderSize: 2 },
 ];
-
 const JACKPOT_BG_COLOR = '#dddddd';
 
 const centerImage = new Image();
@@ -41,8 +40,8 @@ function drawWheel() {
   const jackpotAngle = (2 * Math.PI) / jackpots.length;
 
   jackpots.forEach((jackpot, jackpotIndex) => {
-    const sectionAngle = jackpotAngle / sections.length;
-    sections.forEach((section, sectionIndex) => {
+    const sectionAngle = jackpotAngle / prix.length;
+    prix.forEach((section, sectionIndex) => {
       const startAngle = angle + jackpotAngle * jackpotIndex + sectionAngle * sectionIndex;
       const endAngle = startAngle + sectionAngle;
 
@@ -120,14 +119,33 @@ function animate(startTime, currentSpeed) {
   const elapsedTime = Date.now() - startTime;
 
   if (elapsedTime < ANIMATION_DURATION && currentSpeed > MIN_SPEED) {
-    angle += currentSpeed;
+    angle = (angle + currentSpeed) % (2 * Math.PI);
     const newSpeed = currentSpeed * DECELERATION_RATE;
     drawWheel();
     requestAnimationFrame(() => animate(startTime, newSpeed));
   } else {
+    // Assurez-vous que l'angle final est correctement défini
+    angle = angle % (2 * Math.PI);
     drawWheel();
-    alert(`L'animation de la roue est terminée !`);
+    const winner = getWinningSection();
+    alert(`Résultat final :\nJackpot : ${winner.jackpot.label}\nPrix : ${winner.prize.label}`);
   }
+}// eslint-disable-next-line no-unused-vars
+function getWinningSection() {
+  const pointerAngle = Math.PI * 1.5; // Le pointeur est en haut (270 degrés)
+  const jackpotAngle = (2 * Math.PI) / jackpots.length;
+  const sectionAngle = jackpotAngle / prix.length;
+
+  let currentAngle = (pointerAngle - angle) % (2 * Math.PI);
+  if (currentAngle < 0) currentAngle += 2 * Math.PI;
+
+  const jackpotIndex = Math.floor(currentAngle / jackpotAngle);
+  const prizeIndex = Math.floor((currentAngle % jackpotAngle) / sectionAngle);
+
+  return {
+    jackpot: jackpots[jackpotIndex],
+    prize: prix[prizeIndex]
+  };
 }
 
 // eslint-disable-next-line no-unused-vars
