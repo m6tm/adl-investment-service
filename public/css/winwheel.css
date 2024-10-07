@@ -1,0 +1,29 @@
+
+
+main {
+    width: 100%;
+    min-height: 600px;
+    background-color: rgb(194, 228, 216);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.roue {
+    width: 500px;
+    height: 500px;
+    border-radius: 250px;
+    background-color: black;
+    position: relative;
+}
+
+.spin-spin-one {
+    position: absolute;
+    top: 0;
+    left: calc(500px / 2 - (40px / 2));
+    width: 40px;
+    height: calc(500px / 2);
+    transform-origin: bottom center;
+    transform: rotate(50deg);
+    background-color: rgb(194, 228, 216);
+}
