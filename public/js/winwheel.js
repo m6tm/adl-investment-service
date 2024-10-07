@@ -1,3 +1,6 @@
+
+const socket = io();
+
 /**
  * @type {HTMLCanvasElement}
  */
@@ -155,3 +158,9 @@ function startWheel() {
 }
 
 centerImage.onload = drawWheel;
+
+
+socket.on('connect', () => {
+  console.log('Connected to server');
+  // startWheel()
+});
