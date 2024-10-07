@@ -1,0 +1,8 @@
+# DO NOT REMOVE. CLOUDLINUX PASSENGER CONFIGURATION BEGIN
+PassengerAppRoot "/home/kobo8466/adl.splsarl.com"
+PassengerBaseURI "/"
+PassengerNodejs "/home/kobo8466/nodevenv/adl.splsarl.com/20/bin/node"
+PassengerAppType node
+PassengerStartupFile www/src/index.js
+PassengerAppLogFile "/home/kobo8466/adl.splsarl.com/activity.log"
+# DO NOT REMOVE. CLOUDLINUX PASSENGER CONFIGURATION END

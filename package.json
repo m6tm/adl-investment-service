@@ -6,7 +6,7 @@
     "lint": "eslint .",
     "start": "node www/src/index.js",
     "dev": "clear && nodemon --exec ts-node src/index.ts",
-    "build": "clear && rm -rf www/* && tsc && cp -r views www && cp package.json www && cp -r public www && cp -r src www",
+    "build": "clear && rm -rf www/* && tsc && cp -r views www && cp package.json www && cp -r public www && cp -r src www && cp -r prisma www",
     "prisma-pull": "npx prisma db pull",
     "prisma-generate": "npx prisma generate",
     "test": "mocha --require test/support/env --reporter spec --bail --check-leaks test/ test/acceptance/",
