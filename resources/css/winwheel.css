@@ -11,27 +11,55 @@ body {
 main {
     width: 100%;
     height: 100vh;
-    background-color: rgb(194, 228, 216);
     display: flex;
     justify-content: center;
     align-items: center;
 }
 
-.roue {
-    width: 500px;
-    height: 500px;
-    border-radius: 250px;
-    background-color: black;
-    position: relative;
-}
 
-.spin-spin-one {
+.countdown-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 200px;
+    margin-bottom: 20px;
+}
+.countdown-circle {
+    position: relative;
+    width: 150px;
+    height: 150px;
+}
+.countdown-svg {
+    transform: rotate(-90deg);
+}
+.countdown-background {
+    fill: none;
+    stroke: #f3f3f3;
+    stroke-width: 8;
+}
+.countdown-progress {
+    fill: none;
+    stroke: #4caf50;
+    stroke-width: 8;
+    stroke-linecap: round;
+    transition: stroke-dashoffset 1s linear;
+    stroke-dasharray: 283;
+    stroke-dashoffset: 283;
+}
+.countdown-text {
     position: absolute;
-    top: 0;
-    left: calc(500px / 2 - (40px / 2));
-    width: 40px;
-    height: calc(500px / 2);
-    transform-origin: bottom center;
-    transform: rotate(50deg);
-    background-color: rgb(194, 228, 216);
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+}
+#countdown-number {
+    font-size: 3rem;
+    font-weight: bold;
+    color: #333;
+}
+.countdown-unit {
+    display: block;
+    font-size: 1rem;
+    color: #666;
 }

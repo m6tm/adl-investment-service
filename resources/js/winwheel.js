@@ -160,7 +160,26 @@ function startWheel() {
 centerImage.onload = drawWheel;
 
 
+const countdownNumber = document.getElementById('countdown-number');
+const countdownProgress = document.querySelector('.countdown-progress');
+let timeLeft = 60;
+
+function updateCountdown() {
+  if (timeLeft > 0) {
+    countdownNumber.textContent = timeLeft;
+    const progress = (60 - timeLeft) / 60;
+    const dashoffset = 283 * (1 - progress);
+    countdownProgress.style.strokeDashoffset = dashoffset;
+    timeLeft--;
+    setTimeout(updateCountdown, 1000);
+  } else {
+    countdownNumber.textContent = "0";
+    countdownProgress.style.strokeDashoffset = 0;
+  }
+}
+
 socket.on('connect', () => {
   console.log('Connected to server');
   // startWheel()
+  updateCountdown();
 });

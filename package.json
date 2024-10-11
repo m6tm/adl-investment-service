@@ -3,8 +3,7 @@
   "description": "Investment management application for ADL",
   "version": "1.0.0",
   "scripts": {
-    "vite-build": "tsc -b && vite build",
-    "build:css": "tailwindcss -i ./resources/css/style.css -o ./public/css/style.css --watch",
+    "vite-build": "tsc -b && vite build && tailwindcss -i ./resources/css/style.css -o ./public/css/style.css",
     "lint": "eslint .",
     "start": "node www/src/index.js",
     "dev": "clear && nodemon --exec ts-node src/index.ts",

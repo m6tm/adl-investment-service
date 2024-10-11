@@ -6,13 +6,71 @@
     <title><%= title %></title>
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="dist/assets/winwheel.css">
-    <script src="http://cdnjs.cloudflare.com/ajax/libs/gsap/latest/TweenMax.min.js"></script>
     <!-- Socker.io client -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.5/socket.io.min.js"></script>
+    <script src="js/moment.min.js"></script>
 </head>
 <body>
-    <main>
+    <main class="flex-col">
+        
+        <div class="countdown-container">
+            <div class="countdown-circle">
+                <svg class="countdown-svg" viewBox="0 0 100 100">
+                    <circle class="countdown-background" cx="50" cy="50" r="45"></circle>
+                    <circle class="countdown-progress" cx="50" cy="50" r="45"></circle>
+                </svg>
+                <div class="countdown-text">
+                    <span id="countdown-number">10</span>
+                    <span class="countdown-unit">seconds</span>
+                </div>
+            </div>
+        </div>
+        
         <canvas id="winwheelCanvas" width="500" height="500"></canvas>
+
+        <div class="overflow-x-auto bg-white shadow-md sm:rounded-lg">
+            <table class="table">
+              <!-- head -->
+              <thead>
+                <tr>
+                  <th>Joueur</th>
+                  <th>Nombre de ticket</th>
+                  <th>Montant gagné</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>
+                    <div class="flex items-center gap-3">
+                      <div class="avatar">
+                        <div class="mask mask-squircle h-12 w-12">
+                          <img
+                            src="https://img.daisyui.com/images/profile/demo/2@94.webp"
+                            alt="Avatar Tailwind CSS Component" />
+                        </div>
+                      </div>
+                      <div>
+                        <div class="font-bold">Zemlak, Daniel</div>
+                        <div class="text-sm opacity-50">United States</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td class="text-center">
+                    3
+                  </td>
+                  <td class="text-center">$12.3K</td>
+                </tr>
+              </tbody>
+              <!-- foot -->
+              <tfoot>
+                <tr>
+                  <th>Joueur</th>
+                  <th>Nombre de ticket</th>
+                  <th>Montant gagné</th>
+                </tr>
+              </tfoot>
+            </table>
+        </div>
     </main>
     <script src="dist/js/winwheel.js"></script>
 </body>
