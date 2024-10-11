@@ -9,7 +9,7 @@ export default defineConfig({
         rollupOptions: {
             input: [
                 './resources/js/index.ts',
-                './resources/js/winwheel.js',
+                './resources/js/winwheel.tsx',
                 './resources/css/winwheel.css',
             ],
             output: {

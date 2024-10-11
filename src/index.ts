@@ -1,10 +1,11 @@
 import { type Socket } from "socket.io";
 import { app } from '..';
 import { connectContext } from '../components/connectContext';
-import { getCorsOrigin } from './tools/utils';
+import { getCorsOrigin, getNextDrawDate, startDrawing } from './tools/utils';
 import dotenv from 'dotenv'
 import { PrismaClient } from '@prisma/client'
 import { ConnectionSessionManager } from '../components/actions';
+import cron from 'node-cron';
 
 dotenv.config()
 var debug = require('debug')('kanban-websocket-serve:server');
@@ -90,8 +91,34 @@ function onListening() {
 }
 
 io.sockets.on('connection', (socket: Socket) => {
+  cron.schedule('0 19 1-7 * 1', () => startDrawing(socket), {
+    timezone: 'Europe/London'
+  });
+  
+  cron.schedule('0 19 * * 3', () => startDrawing(socket), {
+    timezone: 'Europe/London'
+  });
+  
+  cron.schedule('0 19 * * 6', () => startDrawing(socket), {
+    timezone: 'Europe/London'
+  });
+  
+  cron.schedule('39 12 * * 5', () => startDrawing(socket), {
+    timezone: 'Europe/London'
+  });
+
+  socket.on('get next draw date', () => {
+    socket.emit('send next draw date', JSON.stringify({
+      nextDrawinDate: getNextDrawDate()
+    }))
+  })
+
+  socket.on('get draw result', result => {
+    console.log(typeof result)
+  })
+
   connexionSessionManager.socket = socket;
   connectContext(socket, connexionSessionManager)
 });
 
-export { prisma }
+export { prisma, connexionSessionManager }

@@ -1,10 +1,14 @@
 
-const socket = io();
+declare global {
+  interface Window {
+    io: any;
+  }
+}
 
-/**
- * @type {HTMLCanvasElement}
- */
-const canvas = document.getElementById('winwheelCanvas');
+const socket: any = window.io();
+let connexion_established = false;
+
+const canvas = document.getElementById('winwheelCanvas')! as HTMLCanvasElement;
 const ctx = canvas.getContext('2d');
 const outerRadius = 200;
 const innerRadius = 80;
@@ -35,10 +39,11 @@ const jackpots = [
 const JACKPOT_BG_COLOR = '#dddddd';
 
 const centerImage = new Image();
-centerImage.src = 'http://place-hold.it/64';
+centerImage.src = 'https://place-hold.it/64';
 
 function drawWheel() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  if (!ctx) return;
+  ctx.clearRect(0, 0, canvas!.width, canvas.height);
 
   const jackpotAngle = (2 * Math.PI) / jackpots.length;
 
@@ -131,7 +136,10 @@ function animate(startTime, currentSpeed) {
     angle = angle % (2 * Math.PI);
     drawWheel();
     const winner = getWinningSection();
-    alert(`Résultat final :\nJackpot : ${winner.jackpot.label}\nPrix : ${winner.prize.label}`);
+    if (connexion_established) socket.emit('get draw result', JSON.stringify({
+      winner: winner.jackpot.label,
+      prize: winner.prize.label
+    }));
   }
 }// eslint-disable-next-line no-unused-vars
 function getWinningSection() {
@@ -160,26 +168,45 @@ function startWheel() {
 centerImage.onload = drawWheel;
 
 
-const countdownNumber = document.getElementById('countdown-number');
-const countdownProgress = document.querySelector('.countdown-progress');
-let timeLeft = 60;
 
-function updateCountdown() {
-  if (timeLeft > 0) {
-    countdownNumber.textContent = timeLeft;
-    const progress = (60 - timeLeft) / 60;
-    const dashoffset = 283 * (1 - progress);
-    countdownProgress.style.strokeDashoffset = dashoffset;
-    timeLeft--;
-    setTimeout(updateCountdown, 1000);
-  } else {
-    countdownNumber.textContent = "0";
-    countdownProgress.style.strokeDashoffset = 0;
-  }
+const countdownNumber = document.getElementById('countdown-number')!;
+// eslint-disable-next-line no-unused-vars
+function updateCountdown(date: string) {
+  let timer = setInterval(() => {
+    const now = moment()
+    const nextDrawDate = moment(date)
+    const diff = nextDrawDate.diff(now)
+    const duration = moment.duration(diff)
+    const duration_data = {
+      days: duration.days() > 9 ? duration.days() : `0${duration.days()}`,
+      hours: duration.hours() > 9 ? duration.hours() : `0${duration.hours()}`,
+      minutes: duration.minutes() > 9 ? duration.minutes() : `0${duration.minutes()}`,
+      seconds: duration.seconds() > 9 ? duration.seconds() : `0${duration.seconds()}`
+    }
+    countdownNumber.textContent = `${duration_data.days} jours ${duration_data.hours} heures ${duration_data.minutes} minutes ${duration_data.seconds} secondes`
+    if (diff <= 0) {
+      clearInterval(timer)
+      startWheel()
+    }
+  }, 1000);
 }
 
 socket.on('connect', () => {
+  connexion_established = true
   console.log('Connected to server');
-  // startWheel()
-  updateCountdown();
+  socket.emit('get next draw date')
+  socket.on('send next draw date', (data: any) => {
+    data = JSON.parse(data)
+    if ('nextDrawinDate' in data) updateCountdown(data.nextDrawinDate)
+  })
 });
+
+async function socketRequest(emit: String, on: string): Promise<boolean> {
+  return new Promise((resolve, reject) => {
+    socket.emit(emit, (data: any) => {
+      resolve(true)
+    })
+  })
+}
+
+export {}
