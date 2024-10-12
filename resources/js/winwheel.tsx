@@ -1,21 +1,37 @@
 
 declare global {
   interface Window {
-    io: any;
+    io: () => any,
+    moment: any,
   }
 }
 
+const moment = window.moment;
+
 const socket: any = window.io();
 let connexion_established = false;
+let angle_history: number[] = []
+
+function random_rang(min: number, max: number) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+function define_safty_angle() {
+  let randomAngle = random_rang(0, 360)
+  while (randomAngle % 10 == 0 || angle_history.includes(randomAngle)) {
+    randomAngle = random_rang(0, 360)
+  }
+  return randomAngle + 20
+}
 
 const canvas = document.getElementById('winwheelCanvas')! as HTMLCanvasElement;
 const ctx = canvas.getContext('2d');
-const outerRadius = 200;
 const innerRadius = 80;
 const centerRadius = 50;
 const centerX = canvas.width / 2;
 const centerY = canvas.height / 2;
-let angle = 0;
+let angle = define_safty_angle();
+let initialAngle = angle;
 
 const INITIAL_SPEED = 0.2;
 const DECELERATION_RATE = 0.99;
@@ -23,14 +39,32 @@ const MIN_SPEED = 0.0001;
 const ANIMATION_DURATION = 60000;
 
 const prix = [
-  { id: 'p1', label: 'Prix 1', color: 'gold' },
-  { id: 'p2', label: 'Prix 2', color: 'orange' },
-  { id: 'p3', label: 'Prix 3', color: 'darkgoldenrod' },
-  { id: 'p4', label: 'Prix 4', color: 'purple' },
-  { id: 'p5', label: 'Prix 5', color: 'gold' },
+  { id: 'p1', label: '$100' },
+  { id: 'p2', label: '$250' },
+  { id: 'p3', label: '$500' },
+  { id: 'p4', label: '$1.000' },
+  { id: 'p5', label: '$2.000' },
+  { id: 'p6', label: '$5.000' },
+  { id: 'p7', label: '$10.000' },
+  { id: 'p8', label: '$25.000' },
+  { id: 'p9', label: '$50.000' },
+  { id: 'p10', label: '$100.000' },
+  { id: 'p11', label: '$250.000' },
+  { id: 'p12', label: '$500.000' },
+  { id: 'p13', label: '$1.000.000' },
 ];
 
-const jackpots = [
+type Jackpot = {
+  id: string;
+  label: string;
+  bgPriceColor: string;
+  borderColor: string;
+  textColor: string;
+  bgTextColor: string;
+  borderSize: number;
+};
+
+let jackpots: Array<Jackpot> = [
   { id: 'j1', label: '$100.000', bgPriceColor: '#e344d1', borderColor: '#fff', textColor: '#e344d1', bgTextColor: '#fff', borderSize: 2 },
   { id: 'j2', label: '$250.000', bgPriceColor: '#5588c5', borderColor: '#fff', textColor: '#5588c5', bgTextColor: '#fff', borderSize: 2 },
   { id: 'j3', label: '$500.000', bgPriceColor: '#7340c9', borderColor: '#fff', textColor: '#7340c9', bgTextColor: '#fff', borderSize: 2 },
@@ -39,13 +73,14 @@ const jackpots = [
 const JACKPOT_BG_COLOR = '#dddddd';
 
 const centerImage = new Image();
-centerImage.src = 'https://place-hold.it/64';
+centerImage.src = `/images/Roue_ADL.png`;
 
 function drawWheel() {
   if (!ctx) return;
   ctx.clearRect(0, 0, canvas!.width, canvas.height);
 
   const jackpotAngle = (2 * Math.PI) / jackpots.length;
+  const newOuterRadius = 250; // Increased from 200 to 250
 
   jackpots.forEach((jackpot, jackpotIndex) => {
     const sectionAngle = jackpotAngle / prix.length;
@@ -55,7 +90,7 @@ function drawWheel() {
 
       ctx.beginPath();
       ctx.moveTo(centerX, centerY);
-      ctx.arc(centerX, centerY, outerRadius, startAngle, endAngle);
+      ctx.arc(centerX, centerY, newOuterRadius, startAngle, endAngle);
       ctx.lineTo(centerX, centerY);
       ctx.fillStyle = jackpot.bgPriceColor;
       ctx.fill();
@@ -64,11 +99,12 @@ function drawWheel() {
       ctx.stroke();
       ctx.closePath();
 
-      const textAngle = startAngle + sectionAngle / 2;
+      const textAngle = startAngle + sectionAngle / 1.3;
       ctx.save();
-      ctx.translate(centerX + Math.cos(textAngle) * (outerRadius * 0.5), centerY + Math.sin(textAngle) * (outerRadius * 0.5));
+      ctx.translate(centerX + Math.cos(textAngle) * (newOuterRadius * .6), centerY + Math.sin(textAngle) * (newOuterRadius * .6));
       ctx.rotate(textAngle);
       ctx.fillStyle = jackpot.bgTextColor;
+      ctx.font = 'bold 15px Arial';
       ctx.fillText(section.label, 0, 0);
       ctx.restore();
     });
@@ -109,7 +145,7 @@ function drawWheel() {
   ctx.stroke();
 
   ctx.save();
-  ctx.translate(centerX, centerY - outerRadius - 20);
+  ctx.translate(centerX, centerY - newOuterRadius - 20);
   ctx.beginPath();
   ctx.moveTo(0, 0);
   ctx.lineTo(-10, -20);
@@ -138,7 +174,8 @@ function animate(startTime, currentSpeed) {
     const winner = getWinningSection();
     if (connexion_established) socket.emit('get draw result', JSON.stringify({
       winner: winner.jackpot.label,
-      prize: winner.prize.label
+      prize: winner.prize.label,
+      angle: initialAngle,
     }));
   }
 }// eslint-disable-next-line no-unused-vars
@@ -197,6 +234,13 @@ socket.on('connect', () => {
   socket.emit('get next draw date')
   socket.on('send next draw date', (data: any) => {
     data = JSON.parse(data)
+    if ('angles' in data) {
+      angle_history = data.angles
+      angle = define_safty_angle()
+      initialAngle = angle
+      drawWheel()
+    }
+    startWheel()
     if ('nextDrawinDate' in data) updateCountdown(data.nextDrawinDate)
   })
 });

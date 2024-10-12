@@ -107,14 +107,26 @@ io.sockets.on('connection', (socket: Socket) => {
     timezone: 'Europe/London'
   });
 
-  socket.on('get next draw date', () => {
+  socket.on('get next draw date', async () => {
+    const angles = await prisma.win_wheel_angle_histories.findMany({
+      orderBy: {
+        created_at: 'desc'
+      },
+      take: 20
+    })
     socket.emit('send next draw date', JSON.stringify({
-      nextDrawinDate: getNextDrawDate()
+      nextDrawinDate: getNextDrawDate(),
+      angles: angles.map((angle) => Number(angle.angle))
     }))
   })
 
-  socket.on('get draw result', result => {
-    console.log(typeof result)
+  socket.on('get draw result', async (result: string) => {
+    const data: { angle: number; winner: string; prize: string } = JSON.parse(result)
+    await prisma.win_wheel_angle_histories.create({
+      data: {
+        angle: data.angle,
+      }
+    })
   })
 
   connexionSessionManager.socket = socket;
