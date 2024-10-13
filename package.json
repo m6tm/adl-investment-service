@@ -77,7 +77,8 @@
     "type-is": "^2.0.0",
     "utils-merge": "1.0.1",
     "uuid": "^8.3.2",
-    "vary": "~1.1.2"
+    "vary": "~1.1.2",
+    "ws": "^8.18.0"
   },
   "devDependencies": {
     "@tailwindcss/forms": "^0.5.9",
@@ -92,6 +93,7 @@
     "@types/node-cron": "^3.0.11",
     "@types/react": "^18.3.11",
     "@types/react-dom": "^18.3.0",
+    "@types/ws": "^8.5.12",
     "@vitejs/plugin-react": "^4.3.2",
     "after": "0.8.2",
     "autoprefixer": "^10.4.20",

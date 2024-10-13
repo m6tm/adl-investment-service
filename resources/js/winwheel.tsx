@@ -9,6 +9,8 @@ declare global {
 const moment = window.moment;
 
 const socket: any = window.io();
+const websockethost = `ws://${location.hostname}${location.port === "" ? '' : `:${location.port}`}/streaming`
+const websocket = new WebSocket(websockethost);
 let connexion_established = false;
 let angle_history: number[] = []
 
@@ -196,8 +198,12 @@ function getWinningSection() {
   };
 }
 
+let draw_runned = false;
 // eslint-disable-next-line no-unused-vars
-function startWheel() {
+async function startWheel() {
+  if (draw_runned) return;
+  draw_runned = true;
+  await startCapture()
   const startTime = Date.now();
   animate(startTime, INITIAL_SPEED);
 }
@@ -245,12 +251,41 @@ socket.on('connect', () => {
   })
 });
 
-async function socketRequest(emit: String, on: string): Promise<boolean> {
-  return new Promise((resolve, reject) => {
-    socket.emit(emit, (data: any) => {
-      resolve(true)
-    })
-  })
+websocket.onmessage = (event) => {
+  console.log(event.data);
+};
+
+// Capture de la page web
+async function startCapture() {
+  try {
+      const stream = await navigator.mediaDevices.getDisplayMedia({
+          video: true,
+          audio: false
+      });
+
+      const mediaRecorder = new MediaRecorder(stream);
+      const chunks: Array<Blob> = [];
+
+      mediaRecorder.ondataavailable = (event) => {
+          chunks.push(event.data);
+          console.log('ok', event.data);
+          if (event.data.size > 0) {
+            websocket.send(event.data);
+          }
+      };
+
+      mediaRecorder.onstop = () => {
+          const blob = new Blob(chunks, { type: 'video/webm' });
+          // Envoyer le blob au serveur ici
+      };
+
+      mediaRecorder.start(1); // Enregistrement toutes les millisecondes
+
+      // Arrêter l'enregistrement après un certain temps
+      setTimeout(() => mediaRecorder.stop(), ANIMATION_DURATION);
+  } catch (err) {
+      console.error("Erreur de capture : ", err);
+  }
 }
 
 export {}

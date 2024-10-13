@@ -11,6 +11,8 @@ export default defineConfig({
                 './resources/js/index.ts',
                 './resources/js/winwheel.tsx',
                 './resources/css/winwheel.css',
+                './resources/js/streaming.ts',
+                './resources/css/streaming.css',
             ],
             output: {
                 entryFileNames: 'js/[name].js',

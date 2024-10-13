@@ -15,5 +15,10 @@ route.get('/', function(req, res, next) {
     title: 'Winwheel',
   });
 })
+.get('/streaming', function(req, res, next) {
+  res.render('streaming', {
+    title: 'streaming',
+  });
+})
 
 export const router = route;

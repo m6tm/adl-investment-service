@@ -6,6 +6,7 @@ import dotenv from 'dotenv'
 import { PrismaClient } from '@prisma/client'
 import { ConnectionSessionManager } from '../components/actions';
 import cron from 'node-cron';
+import WebSocket from 'ws';
 
 dotenv.config()
 var debug = require('debug')('kanban-websocket-serve:server');
@@ -26,6 +27,30 @@ var io = require('socket.io')(server, {
     origin: getCorsOrigin(),
     methods: ["GET", "POST"]
   },
+});
+const wss = new WebSocket.Server({ server, path: '/streaming' });
+
+wss.on('connection', (ws) => {
+  console.log('Client connecté');
+
+  ws.on('message', (message) => {
+    // Diffusez le message à tous les clients connectés
+    console.log(wss.clients.size);
+    wss.clients.forEach(client => {
+      console.log(message);
+      client.send(message);
+      // if (client !== ws && client.readyState === WebSocket.OPEN) {
+      // }
+    });
+  });
+
+  ws.on('error', (error) => {
+      console.error('Erreur WebSocket :', error);
+  });
+
+  ws.on('close', (code, reason) => {
+      console.log(`Connexion fermée : Code=${code}, Raison=${reason}`);
+  });
 });
 
 /**
